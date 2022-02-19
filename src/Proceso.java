@@ -32,10 +32,12 @@ public class Proceso extends Thread {
 
 			for (int i = 0; i < mensajes; i++) {
 				String mensaje = transformarMensajes("Mensaje " + i + ": ");
+				
 			}
 
 		}
 		else {
+			
 
 		}
 
@@ -111,6 +113,10 @@ public class Proceso extends Thread {
 			tipoEnvio = 'S';
 
 		return mensajeOriginal + " " + identificador + tipoRecepcion + tipoEnvio + " -";
+	}
+	
+	public void enviarMensaje(String mensajeAEnviar) {
+		int[] arreglo = buzonEntregar.getContador();
 	}
 
 }
