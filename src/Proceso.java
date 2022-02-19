@@ -1,6 +1,6 @@
 
 public class Proceso extends Thread {
-	
+
 	private int identificador;
 	private int tiempoEspera;
 	private boolean tipoEnvio;
@@ -9,7 +9,7 @@ public class Proceso extends Thread {
 	private Buzon buzonEntregar;
 	private int mensajes = 0;
 	private boolean esProceso1;
-	
+
 	public Proceso (int identificador, int tiempoEspera, boolean tipoEnvio, boolean tipoRecepcion, Buzon buzonRecibir, Buzon buzonEntregar) {
 		this.identificador = identificador;
 		this.tiempoEspera = tiempoEspera;
@@ -24,8 +24,23 @@ public class Proceso extends Thread {
 			esProceso1 = false;
 		}
 	}
-	
-	
+
+	@Override
+	public void run() {
+
+		if(esProceso1) {
+
+			for (int i = 0; i < mensajes; i++) {
+				String mensaje = transformarMensajes("Mensaje " + i + ": ");
+			}
+
+		}
+		else {
+
+		}
+
+	}
+
 	public int getIdentificador() {
 		return this.identificador;
 	}
@@ -75,9 +90,27 @@ public class Proceso extends Thread {
 	public void setBuzonEntregar(Buzon buzonEntregar) {
 		this.buzonEntregar = buzonEntregar;
 	}
-	
+
 	public void setNumMensajes (int numMensajes) {
 		mensajes = numMensajes;
+	}
+
+	public String transformarMensajes (String mensajeOriginal) {
+		System.out.println("Transformando mensaje - Thread: " + identificador + " - Tiempo de espera: " + tiempoEspera + "ms.");
+		try {
+			sleep(tiempoEspera);
+		} catch (InterruptedException e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+		char tipoRecepcion = 'A';
+		char tipoEnvio = 'A';
+
+		if (this.tipoRecepcion == true)
+			tipoRecepcion = 'S';
+		if (this.tipoEnvio == true)
+			tipoEnvio = 'S';
+
+		return mensajeOriginal + " " + identificador + tipoRecepcion + tipoEnvio + " -";
 	}
 
 }

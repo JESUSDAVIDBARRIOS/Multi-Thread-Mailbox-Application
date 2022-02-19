@@ -1,13 +1,16 @@
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Scanner;
 
 public class Principal {
 
 	public static void main(String[] args) {
 		try {
-			InputStreamReader is= new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(is);
+			File file = new File("./src/casoPrueba.txt");
+			@SuppressWarnings("resource")
+			BufferedReader br = new BufferedReader(new FileReader(file));
 			
 			String[] idBuzones = new String[4];
 			int[] tamanoBuzones = new int[4];
@@ -34,11 +37,8 @@ public class Principal {
 
 					}
 					
-					System.out.println(lineaActual);
-					System.out.println(line);
 					if(lineaActual < 7)
 						line = br.readLine();
-					System.out.println("Si");
 					lineaActual++;
 				} catch (Exception e) {
 					System.out.println("Formato incorrecto" + e.getMessage());
@@ -47,6 +47,11 @@ public class Principal {
 			}
 			
 			System.out.println("Lectura realizada correctamente.");
+			
+			@SuppressWarnings("resource")
+			Scanner userInputScanner = new Scanner(System.in);
+			System.out.println("\nIngrese el número de mensajes que quiere que envíe el proceso 1:");
+			int numMensajes = userInputScanner.nextInt();
 			
 			Proceso[] procesos = new Proceso[4];
 			Buzon[] buzones = new Buzon[4];
@@ -60,11 +65,17 @@ public class Principal {
 				if(i == 0)
 					buzonRecibir = 3;
 				procesos[i] = new Proceso(idThreads[i], tiempoEspera[i], condicionesThreads[i][0], condicionesThreads[i][1], buzones[buzonRecibir], buzones[buzonEntregar]);
+				if(i==0)
+					procesos[0].setNumMensajes(numMensajes);
 			}
 			
-			for (int i = 0; i < 4; i++) {
-				System.out.println("Buzon del que recibe: " + procesos[i].getBuzonRecibir().getId() + "- id Proceso: " + procesos[i].getIdentificador() + "- Buzon al que envia: " + procesos[i].getBuzonEntregar().getId());
-			}
+			int sumaTamanioBuzones = buzones[0].getTamanio() + buzones[1].getTamanio() + buzones[2].getTamanio() + buzones[3].getTamanio();
+			if(numMensajes > sumaTamanioBuzones) 
+				throw new Exception("El número de mensajes es mayor a la suma de los tamanios de los buzones.");
+			
+			for (int i = 0; i < 4; i++) 
+				procesos[i].start();
+			
 			
 		}
 		catch (Exception e) {
