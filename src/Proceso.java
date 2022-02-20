@@ -1,3 +1,4 @@
+import java.util.concurrent.CyclicBarrier;
 
 public class Proceso extends Thread {
 
@@ -9,14 +10,16 @@ public class Proceso extends Thread {
 	private Buzon buzonEntregar;
 	private int mensajes = 0;
 	private boolean esProceso1;
+	private CyclicBarrier barrera;
 
-	public Proceso (int identificador, int tiempoEspera, boolean tipoEnvio, boolean tipoRecepcion, Buzon buzonRecibir, Buzon buzonEntregar) {
+	public Proceso (int identificador, int tiempoEspera, boolean tipoEnvio, boolean tipoRecepcion, Buzon buzonRecibir, Buzon buzonEntregar, CyclicBarrier barrera) {
 		this.identificador = identificador;
 		this.tiempoEspera = tiempoEspera;
 		this.tipoEnvio = tipoEnvio;
 		this.tipoRecepcion = tipoRecepcion;
 		this.buzonEntregar = buzonEntregar;
 		this.buzonRecibir = buzonRecibir;
+		this.barrera = barrera;
 		if (identificador == 1) {
 			esProceso1 = true;
 		}
@@ -29,18 +32,77 @@ public class Proceso extends Thread {
 	public void run() {
 
 		if(esProceso1) {
-
 			for (int i = 0; i < mensajes; i++) {
-				String mensaje = transformarMensajes("Mensaje " + i + ": ");
+				int numMensaje = i+1;
+				String mensaje = transformarMensajes("Mensaje " + numMensaje + ": ");
 				
+				if(tipoEnvio) {
+					buzonEntregar.anadirMensajeActivo(mensaje);
+				}
+					
+				else
+					buzonEntregar.anadirMensajePasivo(mensaje);
+			}
+			if(tipoEnvio)
+				buzonEntregar.anadirMensajeActivo("FIN");
+			else
+				buzonEntregar.anadirMensajePasivo("FIN");
+			
+			String mensajeRecibido = "";
+			while (true) {
+				if(tipoRecepcion)
+					try {
+						mensajeRecibido = buzonRecibir.retirarMensajeActivo();
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
+				else
+					try {
+						mensajeRecibido = buzonRecibir.retirarMensajePasivo();
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
+				if(mensajeRecibido.contains("FIN"))
+					break;
 			}
 
 		}
 		else {
-			
-
+			boolean terminarEjecucion = false;
+			String mensajeRecibido = "";
+			while(!terminarEjecucion) {
+				if(tipoRecepcion)
+					try {
+						mensajeRecibido = buzonRecibir.retirarMensajeActivo();
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
+				else
+					try {
+						mensajeRecibido = buzonRecibir.retirarMensajePasivo();
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
+				
+				mensajeRecibido = transformarMensajes(mensajeRecibido);
+				
+				if(tipoEnvio)
+					buzonEntregar.anadirMensajeActivo(mensajeRecibido);
+				else
+					buzonEntregar.anadirMensajePasivo(mensajeRecibido);
+				
+				if(mensajeRecibido.contains("FIN"))
+					terminarEjecucion = true;
+			}
 		}
-
+		
+		System.out.println("Thread " + identificador + " terminó su ejecución.");
+		
+		try {
+			barrera.await();
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		} 
 	}
 
 	public int getIdentificador() {
@@ -98,12 +160,7 @@ public class Proceso extends Thread {
 	}
 
 	public String transformarMensajes (String mensajeOriginal) {
-		System.out.println("Transformando mensaje - Thread: " + identificador + " - Tiempo de espera: " + tiempoEspera + "ms.");
-		try {
-			sleep(tiempoEspera);
-		} catch (InterruptedException e) {
-			System.out.println("Error: " + e.getMessage());
-		}
+				
 		char tipoRecepcion = 'A';
 		char tipoEnvio = 'A';
 
@@ -111,12 +168,18 @@ public class Proceso extends Thread {
 			tipoRecepcion = 'S';
 		if (this.tipoEnvio == true)
 			tipoEnvio = 'S';
-
-		return mensajeOriginal + " " + identificador + tipoRecepcion + tipoEnvio + " -";
-	}
-	
-	public void enviarMensaje(String mensajeAEnviar) {
-		int[] arreglo = buzonEntregar.getContador();
+		
+		String mensajeProcesado = mensajeOriginal + " " + identificador + tipoRecepcion + tipoEnvio + " -";
+		System.out.println("Transformando mensaje - Thread: " + identificador + " - Tiempo de espera: " + tiempoEspera + "ms - Mensaje: " + mensajeProcesado);
+		
+		try {
+			sleep(tiempoEspera);
+		} catch (InterruptedException e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+		
+		return mensajeProcesado;
+		
 	}
 
 }

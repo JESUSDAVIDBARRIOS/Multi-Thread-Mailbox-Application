@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Scanner;
+import java.util.concurrent.CyclicBarrier;
 
 public class Principal {
 
@@ -17,6 +18,7 @@ public class Principal {
 			int[] idThreads = new int[4];
 			int[] tiempoEspera = new int[4];
 			boolean[][] condicionesThreads = new boolean [4][2];
+			CyclicBarrier barrera = new CyclicBarrier(5);
 			
 			String line = br.readLine();
 			int lineaActual = 0;
@@ -64,7 +66,7 @@ public class Principal {
 				int buzonEntregar = i;
 				if(i == 0)
 					buzonRecibir = 3;
-				procesos[i] = new Proceso(idThreads[i], tiempoEspera[i], condicionesThreads[i][0], condicionesThreads[i][1], buzones[buzonRecibir], buzones[buzonEntregar]);
+				procesos[i] = new Proceso(idThreads[i], tiempoEspera[i], condicionesThreads[i][0], condicionesThreads[i][1], buzones[buzonRecibir], buzones[buzonEntregar], barrera);
 				if(i==0)
 					procesos[0].setNumMensajes(numMensajes);
 			}
@@ -76,6 +78,9 @@ public class Principal {
 			for (int i = 0; i < 4; i++) 
 				procesos[i].start();
 			
+			barrera.await();
+			
+			System.out.println("Todos los procesos han terminado correctamente.");
 			
 		}
 		catch (Exception e) {
